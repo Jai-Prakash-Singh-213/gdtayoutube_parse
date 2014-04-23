@@ -32,13 +32,29 @@ def main(url):
             pass
 
 
+def supermain2(gdatajson2, p_title, P_big_title, p_link, p_img, p_update):
+    if gdatajson2.get(p_title) is None:
+        gdatajson2[p_title] = [{"big_title":P_big_title,
+                                "link": p_link,
+                                "img_link": p_img,
+                                "data_updated": p_update}]
+
+    else:
+        gdatajson2[p_title].append({"big_title": P_big_title,
+                                    "link": p_link,
+                                    "img_link": p_img,
+                                    "data_updated": p_update})
+
+    logging.debug(gdatajson2)
+
+
 
 def supermain(tvs, url):
     proxy = main(url)
 
     d = feedparser.parse(url,   handlers = [proxy])
-
-    gdatajson0 = []    
+    
+    gdatajson0 = []
     gdatajson = []    
    
     gdatajson2 = {}
@@ -49,37 +65,43 @@ def supermain(tvs, url):
         img_link = soup.find("img").get("src")
 
         P_big_title = str(post.title.encode("ascii","ignore"))
-
         p_title = P_big_title[:P_big_title.find("-")]
-        p_title = str(p_title[:p_title.find(",")]).strip()
+        p_title = p_title[:p_title.find(",")]
 
         p_link = str(post.link)[:str(post.link).find("&")]
         p_update = str(post.updated)
         p_img = str(img_link)
 
-        test = re.compile(".*%s.*" %(p_title), re.IGNORECASE)
-        p_title_match = filter(test.search, gdatajson0)
-
-        if len(p_title_match) == 0:
+        if len(gdatajson0) == 0:
             gdatajson0.append(p_title)
             gdatajson.append({"title":p_title, "img_link":p_img})
+            supermain2(gdatajson2, p_title, P_big_title, p_link, p_img, p_update)
+
         else:
-            p_title = p_title_match[0]
+            loop = True
+            length = len(gdatajson0)
+            i = 0
+            p_index = None
+
+            while loop is True and (i < length):
+                p_title2 = re.search(p_title, gdatajson0[i])
+                print "Entered......"
+                if p_title2 is not None:
+                    p_index = int(i)
+                    loop = False
+
+                i = i +1 
+            
+            if p_index is None:
+                gdatajson0.append(p_title)
+                gdatajson.append({"title":p_title, "img_link":p_img})
+                supermain2(gdatajson2, p_title, P_big_title, p_link, p_img, p_update)
+
+            else:
+                p_title3 = gdatajson0[p_index]
+                supermain2(gdatajson2, p_title3, P_big_title, p_link, p_img, p_update) 
+
         
-
-        if gdatajson2.get(p_title) is None:
-            gdatajson2[p_title] = [{"big_title":P_big_title, 
-                                    "link": p_link, 
-                                    "img_link": p_img, 
-                                    "data_updated": p_update}]
-        else:
-            gdatajson2[p_title].append({"big_title": P_big_title, 
-                                        "link": p_link, 
-                                        "img_link": p_img, 
-                                        "data_updated": p_update})
-
-        
-
     if  len(gdatajson) == 0:
         supermain(tvs, url)
 

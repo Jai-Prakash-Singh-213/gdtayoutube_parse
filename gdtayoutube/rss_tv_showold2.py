@@ -7,7 +7,6 @@ from lxml import html
 import json
 import time 
 import os 
-import re
 
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] (%(threadName)-10s) %(message)s')
 
@@ -37,8 +36,7 @@ def supermain(tvs, url):
     proxy = main(url)
 
     d = feedparser.parse(url,   handlers = [proxy])
-
-    gdatajson0 = []    
+    
     gdatajson = []    
    
     gdatajson2 = {}
@@ -49,22 +47,21 @@ def supermain(tvs, url):
         img_link = soup.find("img").get("src")
 
         P_big_title = str(post.title.encode("ascii","ignore"))
-
         p_title = P_big_title[:P_big_title.find("-")]
-        p_title = str(p_title[:p_title.find(",")]).strip()
+        p_title = p_titpe[:p_title.find(",")]
 
         p_link = str(post.link)[:str(post.link).find("&")]
         p_update = str(post.updated)
         p_img = str(img_link)
 
-        test = re.compile(".*%s.*" %(p_title), re.IGNORECASE)
-        p_title_match = filter(test.search, gdatajson0)
+       
+        #gdatajson.append({"title":p_title, 
+        #                  "link": p_link, 
+        #                  "data_updated":p_update, 
+        #                  "img_link":p_img})
 
-        if len(p_title_match) == 0:
-            gdatajson0.append(p_title)
-            gdatajson.append({"title":p_title, "img_link":p_img})
-        else:
-            p_title = p_title_match[0]
+        if p_title not in gdatajson:
+            gdatajson.append(p_title)
         
 
         if gdatajson2.get(p_title) is None:
